@@ -2,7 +2,6 @@ import React from "react"
 import StyledPopup from "components/StyledPopup"
 const MarkdownEditor = React.lazy(() => import("components/MarkdownEditor"))
 
-
 const Editor = () => {
     return (
         <StyledPopup>
