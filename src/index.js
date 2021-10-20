@@ -1,12 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { RecoilRoot } from 'recoil';
+import App from 'components/App';
+import { BrowserRouter as Router } from 'react-router-dom';
+import ErrorBoundary from 'components/ErrorBoundary';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Router>
+      <RecoilRoot>
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
+      </RecoilRoot>
+    </Router>
   </React.StrictMode>,
   document.getElementById('root')
 );
