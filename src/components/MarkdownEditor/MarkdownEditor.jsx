@@ -9,6 +9,7 @@ import {h} from 'hastscript'
 import rehypeWrap from 'rehype-wrap-all'
 import remarkDirective from "remark-directive"
 import 'react-markdown-editor-lite/lib/index.css'
+import { useField } from "formik"
 
 const customPlugin = () => {
     return (tree) => {
@@ -120,13 +121,13 @@ Before you commit to buying or leasing any commercial property, you should ensur
 To read more about renting commercial property, please view our [Renting Commercial Property in the United Kingdom guide here](/blog/renting-commercial-property-in-the-united-kingdom){.text-primary}.
 `
 
-const Editor = () => {
+const MarkdownEditor = ({ name }) => {
     
-    const [value, setValue] = useState(defaultValues)
+    const [field, _, helper] = useField(name)
 
     const handleEditorChange = ({ html, text }) => {
         console.log('handleEditorChange', html, text)
-        setValue(text)
+        helper.setValue(text)
     }
 
     const renderHTML = (text) => (
@@ -140,11 +141,11 @@ const Editor = () => {
     return (
         <MdEditor 
             style={{ height: 900 }} 
-            value={value}
+            value={field.value}
             renderHTML={renderHTML}
             onChange={handleEditorChange}
         />
     )
 }
 
-export default Editor
+export default MarkdownEditor

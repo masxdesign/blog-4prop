@@ -1,6 +1,6 @@
 import React from "react"
 import StyledPopup from "components/StyledPopup"
-const MarkdownEditor = React.lazy(() => import("components/MarkdownEditor"))
+const FormikArticle = React.lazy(() => import("components/FormikArticle"))
 
 const Editor = () => {
     return (
@@ -9,7 +9,7 @@ const Editor = () => {
                 <div> 
                     {window.post_id} <span onClick={close}>Close</span>
                     <React.Suspense fallback={<span>Loading...</span>}>
-                        <MarkdownEditor />
+                        <FormikArticle />
                     </React.Suspense>
                 </div>
             )}
