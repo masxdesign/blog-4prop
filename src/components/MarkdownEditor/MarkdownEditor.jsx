@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useMemo } from "react"
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeAttrs from 'rehype-attr'
@@ -10,6 +10,9 @@ import rehypeWrap from 'rehype-wrap-all'
 import remarkDirective from "remark-directive"
 import 'react-markdown-editor-lite/lib/index.css'
 import { useField } from "formik"
+
+import imgLinks from "@pondorasti/remark-img-links"
+import html from "remark-html"
 
 const customPlugin = () => {
     return (tree) => {
@@ -27,7 +30,6 @@ const customPlugin = () => {
     }
 }
 
-const remarkPlugins = [remarkGfm, remarkDirective, customPlugin]
 const rehypePlugins = [
     [rehypeWrap, {selector:'table', wrapper: 'div.responsive-table'}], 
     rehypeRaw, 
@@ -121,13 +123,16 @@ Before you commit to buying or leasing any commercial property, you should ensur
 To read more about renting commercial property, please view our [Renting Commercial Property in the United Kingdom guide here](/blog/renting-commercial-property-in-the-united-kingdom){.text-primary}.
 `
 
-const MarkdownEditor = ({ name }) => {
+const MarkdownEditor = React.forwardRef(({ imageAbsolutePath, mdFieldName = 'markdown', htmlFieldName = 'html', className }, ref) => {
     
-    const [field, _, helper] = useField(name)
+    const remarkPlugins = useMemo(() => ([remarkGfm, remarkDirective, customPlugin, [imgLinks, { absolutePath: imageAbsolutePath }], html]), [imageAbsolutePath])
+
+    const [_, __, helperH] = useField(htmlFieldName)
+    const [fieldMd, ___, helperMd] = useField(mdFieldName)
 
     const handleEditorChange = ({ html, text }) => {
-        console.log('handleEditorChange', html, text)
-        helper.setValue(text)
+        helperMd.setValue(text)
+        helperH.setValue(html)
     }
 
     const renderHTML = (text) => (
@@ -139,13 +144,16 @@ const MarkdownEditor = ({ name }) => {
     )
 
     return (
-        <MdEditor 
-            style={{ height: 900 }} 
-            value={field.value}
-            renderHTML={renderHTML}
-            onChange={handleEditorChange}
-        />
+        <div className={className}>
+            <MdEditor 
+                ref={ref}
+                style={{ height: 900 }} 
+                value={fieldMd.value}
+                renderHTML={renderHTML}
+                onChange={handleEditorChange}
+            />
+        </div>
     )
-}
+})
 
 export default MarkdownEditor
