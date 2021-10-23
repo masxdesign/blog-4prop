@@ -51,15 +51,21 @@ const ProceedButton = ({ onProceed, ...props }) => {
     const { setFieldTouched, resetForm, values } = useFormikContext()
 
     const handleProceed = async () => {
-        const { mainHeading } = await setFieldTouched('mainHeading', true, true)
+        const { mainHeading } = setFieldTouched('mainHeading', true, true)
         if(!mainHeading) {
 
+            const slug = kebabCase(values.mainHeading)
+
             const defaultArticleId = await crud.create({
-                mainHeading: values.mainHeading
+                mainHeading: values.mainHeading,
+                slug
             })
 
-            resetForm({ values: { ...values, id: String(defaultArticleId), mainHeading: values.mainHeading } })
-            onProceed(String(defaultArticleId))
+            const newValues = { ...values, id: String(defaultArticleId), mainHeading: values.mainHeading, slug }
+
+            resetForm({ values: newValues })
+
+            onProceed(newValues)
         }
     }
 
@@ -266,8 +272,8 @@ const FormikArticle = ({ defaultArticleId, defaultOpen = false, onClose, ...prop
 
     const crud = useCrudActions('SEO--BlogPosts')
 
-    const handleProceed = () => {
-        setSecondPage(true)
+    const handleProceed = ({ slug }) => {
+        window.location.href = `https://localhost:50443/blog/${slug}?edit`
     }
 
     const handleClose = () => {
@@ -281,16 +287,23 @@ const FormikArticle = ({ defaultArticleId, defaultOpen = false, onClose, ...prop
 
         let updatedValues = updatedDiff(formikBag.initialValues, data)
 
-        const { html } = updatedValues
+        const { html, mainHeading } = updatedValues
 
         if(html) {
             const htmlToc = htmlTocParser(html)
             updatedValues = { ...updatedValues, ...htmlToc }
         }
 
+        let newSlug
+
+        if(mainHeading) {
+            newSlug = kebabCase(mainHeading)
+            updatedValues = { ...updatedValues, slug: newSlug }
+        }
+
         await crud.update(values.id, updatedValues)
 
-        window.location.href = window.location.href.split('?')[0]
+        window.location.href = newSlug ? `https://localhost:50443/blog/${newSlug}`: window.location.href.split('?')[0]
     }
 
     const handleUploadImages = (success) => {

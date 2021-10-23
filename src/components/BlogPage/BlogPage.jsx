@@ -10,9 +10,7 @@ const BlogPage = () => {
 
     
     return (
-        <Portal id="editor">
-            <FormikArticle />
-        </Portal>
+        <FormikArticle />
     )
 
 }
