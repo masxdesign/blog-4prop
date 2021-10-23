@@ -1,7 +1,8 @@
+import FormikArticle from "components/FormikArticle"
 import React from "react"
 import { Route, Switch } from "react-router"
 
-const BlogPage = React.lazy(() => import("components/BlogPage"))
+const FormikArticle = React.lazy(() => import("components/FormikArticle"))
 const ArticlePage = React.lazy(() => import("components/ArticlePage"))
 
 const App = () => {
@@ -11,7 +12,7 @@ const App = () => {
         <React.Suspense fallback={<span>Loading...</span>}>
             <Switch>
                 <Route exact path="/blog">
-                    <BlogPage />
+                    <FormikArticle />
                 </Route>
                 <Route 
                     path="/blog/:articleSlugOrId" 
