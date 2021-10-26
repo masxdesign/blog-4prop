@@ -1,14 +1,17 @@
-import styled, { css } from "styled-components"
+import styled from "styled-components"
 
 export const Button = styled.a`
-    background-color: white;
-    color: grey;
+    background-color: ghostwhite;
+    color: dodgerblue;
     cursor: pointer;
-    padding: .4em .6em;
+    padding: .4em .9em;
     border-radius: 5px;
     box-shadow: 1px 1px 3px 1px rgb(0 133 199 / 9%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     &:hover {
-        color: dodgerblue;
+        background-color: aliceblue;
         text-decoration: none;
     }
     & + & {
@@ -29,7 +32,9 @@ export const SubmitButton = styled.button.attrs({
     border-radius: 5px;
     border: none;
     color: darkcyan;
-    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     cursor: pointer;
     opacity: ${props => props.$disabled ? .4: 1};
     &:hover {

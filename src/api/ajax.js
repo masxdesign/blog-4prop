@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const ajax = axios.create({
-    baseURL: 'https://localhost:50443',
+    baseURL: window.config.site_url,
     withCredentials: true
 })
 

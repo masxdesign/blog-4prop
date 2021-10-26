@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const ajaxCrud = axios.create({
-    baseURL: 'https://localhost:50443/api/crud',
+    baseURL: `${window.config.site_url}/api/crud`,
     withCredentials: true
 })
 

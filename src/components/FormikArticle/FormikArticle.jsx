@@ -3,12 +3,13 @@ import * as yup from "yup"
 import { Form, Formik, useField, useFormikContext } from "formik"
 import MarkdownEditor from "components/MarkdownEditor"
 import { Button, SubmitButton } from "components/StyledComponents"
-import { ImageField, CustomField } from "components/FormikCustomFields"
+import { CustomField } from "components/FormikCustomFields"
 import StyledPopup from "components/StyledPopup"
 import styled, { css } from "styled-components"
 import useCrudActions from "hooks/use-crudActions"
 import { useDropzone } from "react-dropzone"
-import { identity, kebabCase, keys, pick, pickBy, uniq } from "lodash-es"
+import kebabCase from "lodash-es/kebabCase"
+import uniq from "lodash-es/uniq"
 import classNames from "classnames"
 import { updatedDiff } from 'deep-object-diff';
 import htmlTocParser from "utilities/html-toc-parser"
@@ -221,11 +222,11 @@ const StyledImageUploader = styled(ImageUploader)`
     }
 `
 
-const SecondPage = ({ defaultArticleId, MarkdownEditorRef, onImageSelect, onImageUpload, onImageDelete, images, onImagesFetched }) => {
+const SecondPage = ({ defaultArticleId, MarkdownEditorRef, onCancel, onImageSelect, onImageUpload, onImageDelete, images, onImagesFetched }) => {
 
     const { values, dirty } = useFormikContext()
 
-    const imageAbsolutePath = `https://localhost:50443/new/uploads/users/${values.uid}/images/articles/${values.id}/`
+    const imageAbsolutePath = `${window.config.site_url}/new/uploads/users/${values.uid}/images/articles/${values.id}/`
 
     return (
         <>        
@@ -257,6 +258,7 @@ const SecondPage = ({ defaultArticleId, MarkdownEditorRef, onImageSelect, onImag
             )}
             <div className="d-flex">
                 <SubmitButton type="submit" className="ml-auto" $disabled={!dirty}>Save changes</SubmitButton>
+                <Button onClick={onCancel} className="ml-3">Cancel</Button>
             </div>
         </>
     )
@@ -273,7 +275,7 @@ const FormikArticle = ({ defaultArticleId, defaultOpen = false, onClose, ...prop
     const crud = useCrudActions('SEO--BlogPosts')
 
     const handleProceed = ({ slug }) => {
-        window.location.href = `https://localhost:50443/blog/${slug}?edit`
+        window.location.href = `${window.config.site_url}/blog/${slug}?edit`
     }
 
     const handleClose = () => {
@@ -303,7 +305,7 @@ const FormikArticle = ({ defaultArticleId, defaultOpen = false, onClose, ...prop
 
         await crud.update(values.id, updatedValues)
 
-        window.location.href = newSlug ? `https://localhost:50443/blog/${newSlug}`: window.location.href.split('?')[0]
+        window.location.href = newSlug ? `${window.config.site_url}/blog/${newSlug}`: window.location.href.split('?')[0]
     }
 
     const handleUploadImages = (success) => {
@@ -359,6 +361,7 @@ const FormikArticle = ({ defaultArticleId, defaultOpen = false, onClose, ...prop
                             onImageDelete={handleDeleteImage}
                             images={images}
                             onImagesFetched={setImages}
+                            onCancel={handleClose}
                         />
                     )}
                 </Form>

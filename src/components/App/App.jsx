@@ -11,7 +11,9 @@ const App = () => {
         <React.Suspense fallback={<span>Loading...</span>}>
             <Switch>
                 <Route exact path="/blog">
-                    <FormikArticle />
+                    <div className="d-flex justify-content-center pt-3 pb-1">
+                        <FormikArticle />
+                    </div>
                 </Route>
                 <Route 
                     path="/blog/:articleSlugOrId" 
