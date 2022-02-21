@@ -3,12 +3,14 @@ import { Field, useField } from "formik"
 import styled, { css } from "styled-components"
 import classNames from "classnames"
 
-export const CustomFormInput = ({ as: InputAs = "input", className, showError, errorMessage, leftside,...props }) => (
+export const CustomFormInput = ({ as: InputAs = "input", className, showError, errorMessage, leftside, placeholder, description, ...props }) => (
     <div className={classNames(className, { 'is-invalid': showError })}>
+        <div className="mb-2 ml-2">{placeholder}</div>
         <InputAs 
             className="custom-field"
             {...props}
         />
+        {description && <div className="small bg-light border border-top-0 text-muted px-2 py-1">{description}</div>}
         {showError && (
             <span>                        
                 {errorMessage}

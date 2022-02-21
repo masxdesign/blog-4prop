@@ -29,7 +29,7 @@ const CustomPoppup = ({ trigger, title, open, onClose, onOpen, children, ...prop
             {(close) => (
                 <> 
                     <Header>
-                        {title} <span onClick={close}>Close</span>
+                        {title} <a href="javascript:void(0)" onClick={close}>Close</a>
                     </Header>
                     <div>
                         {children}

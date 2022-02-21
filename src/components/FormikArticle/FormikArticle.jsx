@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import * as yup from "yup"
-import { Form, Formik, useField, useFormikContext } from "formik"
+import { Field, Form, Formik, useField, useFormikContext } from "formik"
 import MarkdownEditor from "components/MarkdownEditor"
 import { Button, SubmitButton } from "components/StyledComponents"
 import { CustomField } from "components/FormikCustomFields"
@@ -13,11 +13,12 @@ import uniq from "lodash-es/uniq"
 import classNames from "classnames"
 import { updatedDiff } from 'deep-object-diff';
 import htmlTocParser from "utilities/html-toc-parser"
+import FieldTags from "components/FieldTags"
 
 const Alert = styled.div`
-    border: 1px solid green;
-    color: green;
-    background-color: lightgreen;
+    border: 1px solid ${props => props.$color};
+    color: ${props => props.$color};
+    background-color: ${props => props.$bgColor};
     margin-bottom: 1em;
     padding: .4em;
 `
@@ -39,7 +40,26 @@ const initialValues = {
     mainImage: '',
     html: '',
     markdown: '',
-    uid: ''
+    uid: '',
+    publish: false,
+    tags: [
+        {
+            "p": "",
+            "t": "North West",
+            "c": "",
+            "w": "R",
+            "r": "6",
+            "m": ""
+        },
+        {
+            "p": "PO19",
+            "t": "Little London Walk",
+            "c": "110",
+            "w": "E",
+            "r": "2",
+            "m": "5"
+        }
+    ]
 }
 
 const validationSchema = yup.object().shape({
@@ -93,8 +113,10 @@ const SwitchUpdate = ({ defaultArticleId, onImagesFetched }) => {
             let values = { id: data.id }
 
             for(const key of Object.keys(initialValues)) {
-                values[key] = data[key] ?? ''
+                values[key] = data[key] ?? initialValues[key] ?? ''
             }
+
+            values.publish = Boolean(Number(values.publish))
 
             resetForm({ values })
             onImagesFetched(images)
@@ -167,7 +189,9 @@ const ImageUploader = ({ onUpload, onDelete, images, className, onSelect, imageA
                     <div key={filename} className={classNames('image', { active: filename === mainImage })}>
                         <ImagePreview $src={`${imageAbsolutePath}/${filename}`}/>
                         <div className="select" onClick={() => onSelect(filename)}>Add to content</div>
-                        <div className="set-default" onClick={() => handleSetAsMain(filename)}>Set as Main</div>
+                        <div className="set-default" onClick={() => handleSetAsMain(filename)}>
+                            {filename === mainImage ? "✔ Main": "Set as Main"}
+                        </div>
                         <div className="delete" onClick={() => handleDelete(filename)}>Delete</div>
                     </div>
                 ))}
@@ -181,7 +205,6 @@ const StyledImageUploader = styled(ImageUploader)`
     border: 1px solid #ddd;
     padding: .4em;
     margin-bottom: .7em;
-    max-width: 800px;
     .dropzone {
         border: 1px dashed lightskyblue;
         background-color: azure;
@@ -236,16 +259,24 @@ const SecondPage = ({ defaultArticleId, MarkdownEditorRef, onCancel, onImageSele
                 name="metadesc" 
                 placeholder="Meta description"
                 maxLength={250}
+                description="A meta description helps describe your page. Important for SEO. Maximum 250 characters."
             />
             {!defaultArticleId || (defaultArticleId && values.id) && (
                 <>
-                    <StyledImageUploader 
-                        onSelect={onImageSelect}
-                        onUpload={onImageUpload} 
-                        onDelete={onImageDelete}
-                        images={images} 
-                        imageAbsolutePath={imageAbsolutePath}
-                    />
+                     <div className="row">
+                         <div className="col-lg-6">
+                            <StyledImageUploader 
+                                onSelect={onImageSelect}
+                                onUpload={onImageUpload} 
+                                onDelete={onImageDelete}
+                                images={images} 
+                                imageAbsolutePath={imageAbsolutePath}
+                            />
+                         </div>
+                         <div className="col-lg-6">
+                            <FieldTags name="tags" />
+                         </div>
+                    </div>
                     <MarkdownEditor 
                         key={values.id}
                         ref={MarkdownEditorRef}
@@ -257,8 +288,12 @@ const SecondPage = ({ defaultArticleId, MarkdownEditorRef, onCancel, onImageSele
                 </>
             )}
             <div className="d-flex">
-                <SubmitButton type="submit" className="ml-auto" $disabled={!dirty}>Save changes</SubmitButton>
-                <Button onClick={onCancel} className="ml-3">Cancel</Button>
+                <label className="ml-auto mr-5 my-auto">
+                    <Field type="checkbox" name="publish" />&nbsp;
+                    Publish
+                </label>
+                <SubmitButton type="submit" disabled={!dirty}>Save changes</SubmitButton>
+                <Button onClick={onCancel} className="ml-3">Close</Button>
             </div>
         </>
     )
@@ -303,6 +338,10 @@ const FormikArticle = ({ defaultArticleId, defaultOpen = false, onClose, ...prop
             updatedValues = { ...updatedValues, slug: newSlug }
         }
 
+        if('publish' in updatedValues) {
+            updatedValues.publish = Number(updatedValues.publish)
+        }
+
         await crud.update(values.id, updatedValues)
 
         window.location.href = newSlug ? `${window.config.site_url}/blog/${newSlug}`: window.location.href.split('?')[0]
@@ -328,45 +367,65 @@ const FormikArticle = ({ defaultArticleId, defaultOpen = false, onClose, ...prop
     const updateOrCreateTitle = secondPage ? 'Update': 'Create'
 
     return (
-        <Popup 
-            title={`${updateOrCreateTitle} Article`}
-            trigger={<Button>{`${updateOrCreateTitle} Article`}</Button>}
-            $sm={!secondPage}
-            onClose={handleClose}
-            onOpen={() => setOpen(true)}
-            open={open}
+        <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={handleSubmit}
+            validateOnBlur={false}
+            {...props}
         >
-            <Formik
-                initialValues={initialValues}
-                validationSchema={validationSchema}
-                onSubmit={handleSubmit}
-                validateOnBlur={false}
-                {...props}
-            >
-                <Form>
-                    {!defaultArticleId && secondPage && (
-                        <Alert>Article created!</Alert>
+            {({ dirty, submitForm }) => (
+                <Popup 
+                    title={(
+                        <>
+                            {`${updateOrCreateTitle} Article`}
+                            {dirty && secondPage && (
+                                <Alert $bgColor="blanchedalmond" $color="darkgoldenrod" className="fixed-top shadow-lg text-center small">
+                                    Once you happy with your changes make sure to click <a href="javascript:void(0)" onClick={submitForm}>Save changes</a>
+                                </Alert>
+                            )}
+                        </>
                     )}
-                    <CustomField 
-                        name="mainHeading" 
-                        placeholder="Main heading"
-                        maxLength={150}
-                    />
-                    {!secondPage ? <ProceedButton onProceed={handleProceed}>Create and proceed</ProceedButton>: (
-                        <SecondPage 
-                            defaultArticleId={defaultArticleId}
-                            MarkdownEditorRef={MarkdownEditorRef}
-                            onImageSelect={handleImageSelect}
-                            onImageUpload={handleUploadImages}
-                            onImageDelete={handleDeleteImage}
-                            images={images}
-                            onImagesFetched={setImages}
-                            onCancel={handleClose}
+                    trigger={<Button>{`${updateOrCreateTitle} Article`}</Button>}
+                    $sm={!secondPage}
+                    onClose={handleClose}
+                    onOpen={() => setOpen(true)}
+                    open={open}
+                >
+                    <Form>
+                        {!defaultArticleId && secondPage && (
+                            <Alert>Article created!</Alert>
+                        )}
+                        {secondPage && (
+                            <div className="d-flex mb-3">
+                                <label className="mr-4 ml-2 my-auto text-muted">
+                                    <Field type="checkbox" name="publish" />&nbsp;
+                                    Publish
+                                </label>
+                                <SubmitButton type="submit" $size="sm" disabled={!dirty}>Save changes</SubmitButton>
+                            </div>
+                        )}
+                        <CustomField 
+                            name="mainHeading" 
+                            placeholder="Main heading"
+                            maxLength={150}
                         />
-                    )}
-                </Form>
-            </Formik>
-        </Popup>
+                        {!secondPage ? <ProceedButton onProceed={handleProceed}>Create and proceed</ProceedButton>: (
+                            <SecondPage 
+                                defaultArticleId={defaultArticleId}
+                                MarkdownEditorRef={MarkdownEditorRef}
+                                onImageSelect={handleImageSelect}
+                                onImageUpload={handleUploadImages}
+                                onImageDelete={handleDeleteImage}
+                                images={images}
+                                onImagesFetched={setImages}
+                                onCancel={handleClose}
+                            />
+                        )}
+                    </Form>
+                </Popup>
+            )}
+        </Formik>
     )
 }
 

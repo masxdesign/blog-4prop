@@ -1,4 +1,4 @@
-import styled from "styled-components"
+import styled, { css } from "styled-components"
 
 export const Button = styled.a`
     background-color: ghostwhite;
@@ -24,6 +24,14 @@ export const Toolbar = styled.div`
     padding: 1em;
 `
 
+const submitButtonSizes = {
+    sm: css`
+        padding: .5em 1em;
+        border-radius: 3px;
+        font-size: 90%
+    `
+}
+
 export const SubmitButton = styled.button.attrs({
     type: "submit"
 })`
@@ -36,9 +44,10 @@ export const SubmitButton = styled.button.attrs({
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    opacity: ${props => props.$disabled ? .4: 1};
+    opacity: ${props => props.disabled ? .4: 1};
     &:hover {
         color: white;
         background-color: blueviolet;
     }
+    ${props => submitButtonSizes[props.$size]}
 `
